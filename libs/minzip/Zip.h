@@ -25,7 +25,7 @@
 typedef struct ZipEntry {
     unsigned int fileNameLen;
     const char*  fileName;       // not null-terminated
-    loff_t       offset;
+    long         offset;
     long         compLen;
     long         uncompLen;
     int          compression;
@@ -114,7 +114,7 @@ INLINE UnterminatedString mzGetZipEntryFileName(const ZipEntry* pEntry) {
     ret.len = pEntry->fileNameLen;
     return ret;
 }
-INLINE loff_t mzGetZipEntryOffset(const ZipEntry* pEntry) {
+INLINE long mzGetZipEntryOffset(const ZipEntry* pEntry) {
     return pEntry->offset;
 }
 INLINE long mzGetZipEntryUncompLen(const ZipEntry* pEntry) {

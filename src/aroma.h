@@ -75,22 +75,28 @@
 //
 // AROMA Main Configurations
 //
-#define AROMA_BUILD_A     "<kamusta@tenseventyseven.cf>"
-#define AROMA_BUILD_URL   "https://fresh.tenseventyseven.cf/"
-#define AROMA_COPY        "(C) 2022 TenSeventy7 for the Fresh Project\n(C) 2013-2017 amarullz xda-developers"
-#define AROMA_COPY_NS1    "(C) 2022 TenSeventy7 for the Fresh Project and"
-#define AROMA_COPY_NS2    "(C) 2013-2017 amarullz xda-developers"
+/*
+  //-- MOVE TO Android.mk
+  #define AROMA_NAME        "AROMA INSTALLER"
+  #define AROMA_VERSION     "2.70B6"
+  #define AROMA_BUILD       "130624-042B"
+  #define AROMA_BUILD_CN    "Flamboyan-Beta"
+*/
+#define AROMA_BUILD_L     "Bandung - Indonesia"
+#define AROMA_BUILD_A     "<support@amarullz.com>"
+#define AROMA_BUILD_URL   "http://www.amarullz.com/"
+#define AROMA_COPY        "(c) 2013 by amarullz xda-developers"
 
 //-- Temporary Dir - Move from /tmp/aroma-data to /tmp/aroma symlink to /tmp/aroma-data for backward compatibility
 #define AROMA_SYSTMP      "/tmp"
 //#define AROMA_SYSTMP      "/data"
-#define AROMA_TMP         AROMA_SYSTMP "/install-wizard"
-#define AROMA_TMP_S       AROMA_SYSTMP "/install-wizard-data"
+#define AROMA_TMP         AROMA_SYSTMP "/aroma"
+#define AROMA_TMP_S       AROMA_SYSTMP "/aroma-data"
 
-#define AROMA_DIR         "META-INF/com/google/android/install-wizard"
+#define AROMA_DIR         "META-INF/com/google/android/aroma"
+#define AROMA_CFG         "META-INF/com/google/android/aroma-config"
 #define AROMA_UPDATESCRPT "META-INF/com/google/android/updater-script"
-#define AROMA_CFG         "META-INF/com/google/android/install-wizard-config"
-#define AROMA_ORIB        "META-INF/com/google/android/install-wizard-binary"
+#define AROMA_ORIB        "META-INF/com/google/android/update-binary-installer"
 #define AROMA_FRAMEBUFFER "/dev/graphics/fb0"
 #define AROMA_INSTALL_LOG (AROMA_TMP "/.install.log")
 #define AROMA_INSTALL_TXT (AROMA_TMP "/.install.txt")
@@ -557,7 +563,6 @@ byte      apng_draw_ex(CANVAS * _b, PNGCANVAS * p, int xpos,            // Draw 
 // AROMA Graphic Function
 //
 byte      ag_isfreetype(byte isbig);
-PNGFONTS * ag_getfont(byte isbig);
 byte      ag_fontready(byte isbig);
 CANVAS  * agc();          // Get Main AROMA Graph Canvas
 byte      ag_init();      // Init AROMA Graph and Framebuffers
@@ -660,7 +665,6 @@ color     ag_calculatecontrast(color c, float intensity);
 //
 int   ag_fontheight(byte isbig);                      // Get Font Height
 byte  ag_loadsmallfont(char * fontname, byte is_freetype, char * relativeto); // Load Small Font From Zip
-byte  ag_loadheaderfont(char * fontname, byte is_freetype, char * relativeto); // Load Header Font From Zip
 byte  ag_loadbigfont(char * fontname, byte is_freetype, char * relativeto); // Load Big Font From Zip
 void  ag_closefonts();                                // Release Big & Small Fonts
 byte  ag_drawchar(CANVAS * _b, int x, int y, int c,  // Draw Character into Canvas

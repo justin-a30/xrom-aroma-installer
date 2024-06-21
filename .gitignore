@@ -1,6 +1,0 @@
-bin
-*.o
-*.s
-*.i
-*.bc
-tmp-zip
