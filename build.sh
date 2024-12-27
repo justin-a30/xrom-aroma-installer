@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # =========================================
 #         _____              _      
 #        |  ___| __ ___  ___| |__   
@@ -10,6 +10,7 @@
 #  
 #  The Fresh Project
 #  Copyright (C) 2019-2022 TenSeventy7
+#                2024 PeterKnecht93
 #  
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -27,46 +28,34 @@
 #  =========================
 #
 
-# Utility directories
-ORIGIN_DIR=$(pwd)
-CURRENT_BUILD_USER=$(whoami)
+set -e
 
-# Toolchain options
-BUILD_PREF_COMPILER='gcc'
-BUILD_PREF_COMPILER_VERSION='linaro'
+# [
+TOOLCHAIN="$HOME/Android/toolchains/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu"
 
-# Local toolchain directory
-TOOLCHAIN=$HOME/Android/toolchains/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu
+BUILD_PREF_COMPILER="gcc"
 
-# External toolchain directory
-TOOLCHAIN_EXT=$(pwd)/toolchain
+script_echo() { echo "  $1"; }
+exit_script() { kill -INT $$; }
+# ]
 
-script_echo() {
-	echo "  $1"
-}
+# Verify toolchain
+script_echo " "
 
-exit_script() {
-	kill -INT $$
-}
-
-verify_toolchain() {
-	sleep 2
+if [ -d "$TOOLCHAIN" ]; then
+	script_echo "I: Toolchain found at default location."
+	export PATH="$TOOLCHAIN/bin:$PATH"
+	export LD_LIBRARY_PATH="$TOOLCHAIN/lib:$LD_LIBRARY_PATH"
+else
+	script_echo "E: Toolchain not found!"
+	script_echo "   Exiting..."
 	script_echo " "
+	exit_script
+fi
 
-	if [[ -d "${TOOLCHAIN}" ]]; then
-		script_echo "I: Toolchain found at default location"
-		export PATH="${TOOLCHAIN}/bin:$PATH"
-		export LD_LIBRARY_PATH="${TOOLCHAIN}/lib:$LD_LIBRARY_PATH"
-	else
-		script_echo "I: Toolchain not found"
-		script_echo "   Exiting..."
-		kill -INT $$
-	fi
+export CROSS_COMPILE="aarch64-linux-gnu-"
+export CC="$BUILD_PREF_COMPILER"
 
-	export CROSS_COMPILE=aarch64-linux-gnu-
-	export CC=${BUILD_PREF_COMPILER}
-}
-
-verify_toolchain
+# Compile FreshNxtInstaller
 make clean
 make
