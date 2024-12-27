@@ -31,7 +31,9 @@
 set -e
 
 # [
+TOP="$PWD"
 TOOLCHAIN="$HOME/Android/toolchains/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu"
+TOOLCHAIN_EXT="$TOP/toolchain"
 
 BUILD_PREF_COMPILER="gcc"
 
@@ -47,10 +49,22 @@ if [ -d "$TOOLCHAIN" ]; then
 	export PATH="$TOOLCHAIN/bin:$PATH"
 	export LD_LIBRARY_PATH="$TOOLCHAIN/lib:$LD_LIBRARY_PATH"
 else
-	script_echo "E: Toolchain not found!"
-	script_echo "   Exiting..."
-	script_echo " "
-	exit_script
+	if [ -d "$TOOLCHAIN_EXT" ]; then
+		script_echo "I: Toolchain found at repository root."
+	else
+		script_echo "I: Toolchain not found at default location or repository root."
+		script_echo "   Downloading recommended toolchain at $TOOLCHAIN_EXT..."
+
+		mkdir -p "$TOOLCHAIN_EXT"
+		wget -O "$TOOLCHAIN_EXT/toolchain.tar.xz" \
+			https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/aarch64-linux-gnu/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu.tar.xz &>/dev/null
+
+		unxz "$TOOLCHAIN_EXT/toolchain.tar.xz"
+		tar --strip-components=1 -xf "$TOOLCHAIN_EXT/toolchain.tar" -C "$TOOLCHAIN_EXT"
+		rm -f "$TOOLCHAIN_EXT/toolchain.tar"
+	fi
+	export PATH="$TOOLCHAIN_EXT/bin:$PATH"
+	export LD_LIBRARY_PATH="$TOOLCHAIN_EXT/lib:$LD_LIBRARY_PATH"
 fi
 
 export CROSS_COMPILE="aarch64-linux-gnu-"

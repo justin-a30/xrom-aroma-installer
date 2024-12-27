@@ -4,3 +4,4 @@ bin
 *.i
 *.bc
 tmp-zip
+toolchain
