@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #ifndef _AROMA_NODEBUG
 #include <sys/statfs.h>

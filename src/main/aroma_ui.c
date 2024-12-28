@@ -22,7 +22,10 @@
  */
 
 #include <sys/stat.h>       //-- Filesystem Stats
+#include <ctype.h>
 #include "../edify/expr.h"  //-- Edify Parser
+#include "../edify/lex.yy.h"
+#include "../edify/parser.h"
 #include "../aroma.h"
 
 #define APARSE_MAXHISTORY 256

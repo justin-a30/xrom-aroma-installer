@@ -501,8 +501,9 @@ PNGCANVAS * aui_menu_icon();
 //
 // AROMA PNG Functions
 //
-byte      apng_load(PNGCANVAS * pngcanvas, char * imgname);       // Load PNG From Zip Item
+byte      apng_load(PNGCANVAS * pngcanvas, char * imgname);             // Load PNG From Zip Item
 void      apng_close(PNGCANVAS * pngcanvas);                            // Release PNG Memory
+void      apng_closefont(PNGFONTS *p);                                  // Close Memory
 byte      apng_draw(CANVAS * _b, PNGCANVAS * p, int xpos, int ypos);    // Draw PNG Into Canvas
 byte apng_stretch(
   CANVAS * _b,
@@ -559,6 +560,7 @@ byte      apng_draw_ex(CANVAS * _b, PNGCANVAS * p, int xpos,            // Draw 
 byte      ag_isfreetype(byte isbig);
 PNGFONTS * ag_getfont(byte isbig);
 byte      ag_fontready(byte isbig);
+byte      ag_blur(CANVAS *d, CANVAS *s, int radius);
 CANVAS  * agc();          // Get Main AROMA Graph Canvas
 byte      ag_init();      // Init AROMA Graph and Framebuffers
 void      ag_close_thread(); // Close Graph Thread
@@ -710,6 +712,7 @@ void    ev_exit(void);
 int     ev_get(struct input_event * ev, unsigned dont_wait);
 int     ui_wait_key();
 int     ui_key_pressed(int key);
+void    ui_clear_key_queue_ex();
 void    ui_clear_key_queue();
 int     touchX();
 int     touchY();

@@ -21,6 +21,9 @@
  *
  */
 
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "../../libs/minzip/Zip.h"
 #include "../aroma.h"
 

@@ -24,6 +24,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <linux/fb.h>
+#include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <pthread.h>
 #include "../aroma.h"
