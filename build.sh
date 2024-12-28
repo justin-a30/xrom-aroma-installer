@@ -32,7 +32,7 @@ set -e
 
 # [
 TOP="$PWD"
-TOOLCHAIN="$HOME/Android/toolchains/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu"
+TOOLCHAIN="$HOME/Android/toolchains/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu"
 TOOLCHAIN_EXT="$TOP/toolchain"
 
 BUILD_PREF_COMPILER="gcc"
@@ -57,7 +57,7 @@ else
 
 		mkdir -p "$TOOLCHAIN_EXT"
 		wget -O "$TOOLCHAIN_EXT/toolchain.tar.xz" \
-			https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/aarch64-linux-gnu/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu.tar.xz &>/dev/null
+			https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz &>/dev/null
 
 		unxz "$TOOLCHAIN_EXT/toolchain.tar.xz"
 		tar --strip-components=1 -xf "$TOOLCHAIN_EXT/toolchain.tar" -C "$TOOLCHAIN_EXT"
@@ -67,7 +67,7 @@ else
 	export LD_LIBRARY_PATH="$TOOLCHAIN_EXT/lib:$LD_LIBRARY_PATH"
 fi
 
-export CROSS_COMPILE="aarch64-linux-gnu-"
+export CROSS_COMPILE="aarch64-none-linux-gnu-"
 export CC="$BUILD_PREF_COMPILER"
 
 # Compile FreshNxtInstaller
