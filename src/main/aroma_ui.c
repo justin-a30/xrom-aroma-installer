@@ -760,7 +760,7 @@ Value * AROMA_EXTRACT(const char * name, State * state, int argc, Expr * argv[])
   _INITARGS();
   byte res = 0;
   char dpath[256];
-  snprintf(dpath, 256, "%s/%s", AROMA_TMP, args[1]);
+  snprintf(dpath, 256, "%s/%s", "/tmp", args[1]);
   
   if (strcmp("ziptotmp", name) == 0) {
     res = az_extract(args[0], dpath);
