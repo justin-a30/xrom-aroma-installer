@@ -99,21 +99,21 @@ ASFLAGS := $(ARCH_ASFLAGS)
 LDLIBS := -lm -lpthread
 LDFLAGS := --gc-sections --strip-all
 
-all: bin/aroma_installer-$(ARCH).zip
+all: zip
+	@echo " "
 
-bin/aroma_installer-$(ARCH).zip: bin/aroma_installer-$(ARCH)
-	cp -RT assets tmp-zip
-	cp $(@:.zip=) tmp-zip/META-INF/com/google/android/update-binary
-	cp assets/META-INF/com/google/android/install-wizard-binary tmp-zip/META-INF/com/google/android/install-wizard-binary
-	7z a $@ ./tmp-zip/*
+zip: bin
+	@mkdir -p out/tmp
+	@cp -a assets/META-INF out/tmp
+	@cp out/install_wizard-$(ARCH)  out/tmp/META-INF/com/google/android/update-binary
+	@7z a out/install_wizard-$(ARCH).zip ./out/tmp/* >/dev/null
 
-bin/aroma_installer-$(ARCH): $(OBJS)
-	mkdir -p bin
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDLIBS)
+bin: $(OBJS)
+	mkdir -p out
+	$(CC) $(CFLAGS) -o out/install_wizard-$(ARCH) $(OBJS) $(LDLIBS)
 
 clean:
-	$(RM) $(OBJS)
-	$(RM) bin/aroma_installer-$(ARCH) bin/aroma_installer-$(ARCH).zip
-	$(RM) -r tmp-zip *.i *.s *.bc
+	@rm -rf out
+	@rm -f $(OBJS) $(OBJS:.o=.i) $(OBJS:.o=.s) $(OBJS:.o=.bc)
 
 .PHONY: clean

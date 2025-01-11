@@ -1,7 +1,6 @@
-bin
+toolchain
+out
 *.o
 *.s
 *.i
 *.bc
-tmp-zip
-toolchain
