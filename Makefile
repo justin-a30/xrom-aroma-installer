@@ -104,7 +104,7 @@ all: zip
 
 zip: bin
 	@mkdir -p out/tmp
-	@cp -a assets/META-INF out/tmp
+	@cp -a assets/* out/tmp
 	@cp out/install_wizard-$(ARCH)  out/tmp/META-INF/com/google/android/update-binary
 	@7z a out/install_wizard-$(ARCH).zip ./out/tmp/* >/dev/null
 
