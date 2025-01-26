@@ -1,0 +1,14 @@
+[Main information]
+upgrade type: USB
+model string: T-PTMCDEUC
+major version: 1430
+minor version: 3
+build date: 2024-06-28
+release name: SWU-OU_T-PTMCDEUC-01430-2024-06-28-Release
+firm code: SWU-OU_T-PTMCDEUC_01430_2024-06-28
+firm version: 01430.2024-06-28
+used key type: PontusM 2023 rel key decrypted aes key/PontusM 2023 rel key private rsa key
+tool version: 1.10
+cipher suite: aes-256-cbc-sha512
+partitions: 123456789101213141518192223
+md5sum: 0c3a67ca5c73cfe870e2ea5b5c7c1509

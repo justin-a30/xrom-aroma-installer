@@ -1,419 +1,281 @@
-
-# =========================================
-#         _____              _      
-#        |  ___| __ ___  ___| |__   
-#        | |_ | '__/ _ \/ __| '_ \  
-#        |  _|| | |  __/\__ \ | | | 
-#        |_|  |_|  \___||___/_| |_| 
-#                              
-# =========================================
-# FreshNxt - ROM install script
-# (C) 2020-2022 John Vincent - TenSeventy7@XDA
-# This is licensed under GPLv3
 #
-
-# Extract the tools folder
-ifelse(
-      is_mounted("/cache"),
-      sleep(1),
-      mount("ext4", "EMMC", "/dev/block/platform/13520000.ufs/by-name/cache", "/cache")
-);
-package_extract_dir("META-INF/com/google/android/install-wizard/tools", "/cache/tools");
-package_extract_dir("META-INF/cf/tenseventyseven/fresh", "/cache/fresh");
-set_metadata_recursive("/cache/tools", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0755);
-
-ui_print("- " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.scanning"));
-run_program("/cache/tools/fresh-tk", "mounts_checker");
-ifelse(
-  file_getprop("/tmp/toolkit.prop", "boot.part.by-name") == "fail", (
-    ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.fail1"));
-    ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.fail2"));
-    sleep(5);
-    abort(" ");
-   )
-);
-
-# Extract ROM prop files
-package_extract_file("fresh.prop", "/tmp/fresh.prop");
-package_extract_file("build.prop", "/tmp/build.prop");
-
-# HACK: Actually check if we found the following partitions soon.
-ui_print("  - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.found.system"));
-show_progress(0.010000, 0);
-sleep(1);
-ui_print("  - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.found.vendor"));
-show_progress(0.020000, 0);
-sleep(1);
-ui_print("  - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.found.product"));
-show_progress(0.030000, 0);
-sleep(1);
-ui_print("  - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.found.splash"));
-show_progress(0.040000, 0);
-sleep(1);
-ui_print("  - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.found.boot"));
-show_progress(0.050000, 0);
-sleep(1);
-ui_print("  - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.found.dtb"));
-show_progress(0.060000, 0);
-sleep(1);
-ui_print("  - " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.found.recovery"));
-show_progress(0.070000, 0);
-sleep(3);
-
-# Prepare partitions for pre-install services
-ifelse(is_mounted(file_getprop("/tmp/toolkit.prop", "block.system.mount")), sleep(1), mount("ext4", "EMMC", file_getprop("/tmp/toolkit.prop", "block.system"), file_getprop("/tmp/toolkit.prop", "block.system.mount")));
-show_progress(0.080000, 0);
-ifelse(is_mounted("/product"), sleep(1), mount("ext4", "EMMC", file_getprop("/tmp/toolkit.prop", "block.product"), "/product"));
-ifelse(is_mounted("/vendor"), sleep(1), mount("ext4", "EMMC", file_getprop("/tmp/toolkit.prop", "block.vendor"), "/vendor"));
-show_progress(0.090000, 0);
-ifelse(is_mounted("/data"), sleep(1), run_program("/cache/tools/busybox", "mount", "/data"));
-show_progress(0.100000, 0);
-
-# Check if data exists on device so we can backup OMC and stuff
-run_program("/cache/tools/fresh-tk", "data_check");
-
-ifelse(
-  file_getprop("/tmp/toolkit.prop", "system.exist.data") == "true", (
-    run_program("/cache/tools/fresh-tk", "optics", "backup");
-    show_progress(0.125000, 0);
-    run_program("/cache/tools/fresh-tk", "propscan");
-   )
-);
-
-# Backup SHRP express changes if reinstalling Fresh
-ifelse(
-  file_getprop("/tmp/toolkit.prop", "system.exist.rom") == "false", (
-    sleep(1);
-   ), (
-    run_program("/cache/tools/fresh-tk", "fresh_shrp", "backup");
-   )
-);
-
+# Welcome, if you're reading this!
+#
+#
+#
+# Print ROM Info
+#
+ui_print("---------------------------------------------");
+ui_print(" -   Ported from: Samsung Galaxy S21 FE     -");
+ui_print(" -   for devices: Samsung Galaxy A30/A40    -");
+ui_print(" -   OS: OneUI6.1 based on Android 14 (U)   -");
+ui_print(" -              Version: 3.0                -");
+ui_print("---------------------------------------------");
 ui_print(" ");
-show_progress(0.150000, 0);
-
-# Unmount system, vendor, and product/odm partitions for flashing
-ui_print("- " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.umount"));
-ifelse(is_mounted(file_getprop("/tmp/toolkit.prop", "block.system.mount")), unmount(file_getprop("/tmp/toolkit.prop", "block.system.mount")));
-ifelse(is_mounted("/product"), unmount("/product"));
+ui_print(" - Info: Installation can Take about 5-10min.-");
+#
+# Extract executable 
+#
+# Extract it
+package_extract_dir("META-INF/scripts/bin", "/tmp/");
+#
+# Set permissions
+set_metadata_recursive("/tmp", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0777);
+#
+# Mounts
+#
+ui_print("@>Mount partition...");
+ifelse(is_mounted("/system_root"), unmount("/system_root"));
 ifelse(is_mounted("/vendor"), unmount("/vendor"));
-
-sleep(3);
-show_progress(0.200000, 0);
-
-# Flash OS partition
-ui_print("- " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.main"));
-
-ifelse(
-  file_getprop("/tmp/toolkit.prop", "block.dynamic.mount") == "true", (
-    ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.super"));
-    package_extract_file("FRSH/super.img", file_getprop("/tmp/toolkit.prop", "block.super"));
-    show_progress(0.700000, 0);
-  ), (
-    ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.system"));
-    block_image_update("/dev/block/platform/13520000.ufs/by-name/system", package_extract_file("system.transfer.list"), "system.new.dat.br", "system.patch.dat") || abort("      - Failed to update system image!");
-    show_progress(0.300000, 0);
-
-    ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.vendor"));
-    block_image_update("/dev/block/platform/13520000.ufs/by-name/vendor", package_extract_file("vendor.transfer.list"), "vendor.new.dat.br", "vendor.patch.dat") || abort("      - Failed to update vendor image!");
-    show_progress(0.600000, 0);
-
-    ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.product"));
-    block_image_update("/dev/block/platform/13520000.ufs/by-name/product", package_extract_file("product.transfer.list"), "product.new.dat.br", "product.patch.dat") || abort("      - Failed to update product image!");
-    show_progress(0.700000, 0);
-    
-  )
-);
-
-# Flash up_param partition
-ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.splash"));
-package_extract_file("up_param.bin", file_getprop("/tmp/toolkit.prop", "block.up_param"));
-show_progress(0.720000, 0);
-
-# Flash boot/recovery/DTB
-ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.boot.mint"));
-package_extract_file("boot.img", file_getprop("/tmp/toolkit.prop", "block.boot"));
-show_progress(0.760000, 0);
-ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.dtb"));
-package_extract_file("dtb.img", "/dev/block/platform/13520000.ufs/by-name/dtb");
-show_progress(0.780000, 0);
-ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.recovery.shrp"));
-package_extract_file("recovery.img", file_getprop("/tmp/toolkit.prop", "block.recovery"));
-
-show_progress(0.800000, 0);
-
-ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "script.install.complete"));
-sleep(3);
-ui_print(" ");
-
-# Post-install services
-ui_print("- " + file_getprop("/tmp/install-wizard/lang.prop", "script.housekeeping.addons"));
-ifelse(is_mounted(file_getprop("/tmp/toolkit.prop", "block.system.mount")), sleep(1), mount("ext4", "EMMC", file_getprop("/tmp/toolkit.prop", "block.system"), file_getprop("/tmp/toolkit.prop", "block.system.mount")));
-ifelse(is_mounted("/product"), sleep(1), mount("ext4", "EMMC", file_getprop("/tmp/toolkit.prop", "block.product"), "/product"));
-ifelse(is_mounted("/vendor"), sleep(1), mount("ext4", "EMMC", file_getprop("/tmp/toolkit.prop", "block.vendor"), "/vendor"));
-
-# Install addons
-ui_print(" ");
-
-# Google
-ifelse(
-  file_getprop("/tmp/install-wizard/google.prop", "selected.0") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.google") + " - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.google.full.title"));
-      sleep(10);
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/google.prop", "selected.0") == "2", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.google") + " - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.google.micro.title"));
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.google.Full");
-      sleep(5);
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/google.prop", "selected.0") == "3", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.google") + " - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.google.lite.title"));
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.google.Full");
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.google.Micro");
-      sleep(3);
-  )
-);
-
-show_progress(0.810000, 0);
-
-# Bixby
-ifelse(
-  file_getprop("/tmp/install-wizard/bixby.prop", "item.0.1") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.bixby.voice.title"));
-      sleep(5);
-      show_progress(0.812000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.bixby.Voice");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/bixby.prop", "item.0.2") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.bixby.vision.title"));
-      sleep(3);
-      show_progress(0.814000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.bixby.Vision");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/bixby.prop", "item.0.3") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.bixby.reminders.title"));
-      sleep(2);
-      show_progress(0.816000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.bixby.Reminders");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/bixby.prop", "item.0.4") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.bixby.routines.title"));
-      sleep(2);
-      show_progress(0.818000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.bixby.Routines");
-  )
-);
-
-show_progress(0.820000, 0);
-
-# Seamless
-ifelse(
-  file_getprop("/tmp/install-wizard/seamless.prop", "item.0.1") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.seamless.sharelive.title"));
-      sleep(2);
-      show_progress(0.822000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.seamless.ShareLive");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/seamless.prop", "item.0.2") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.seamless.ltw.title"));
-      sleep(2);
-      show_progress(0.824000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.seamless.PhoneLink");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/seamless.prop", "item.0.3") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.seamless.cta.title"));
-      sleep(2);
-      show_progress(0.826000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.seamless.MdecService");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/seamless.prop", "item.0.4") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.seamless.friends.title"));
-      sleep(2);
-      show_progress(0.828000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.seamless.Friends");
-  )
-);
-
-show_progress(0.830000, 0);
-
-# AR Zone
-ifelse(
-  file_getprop("/tmp/install-wizard/ar-zone.prop", "item.0.1") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.ar_zone.zone.title"));
-      sleep(2);
-      show_progress(0.832000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.ar.Zone");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/ar-zone.prop", "item.0.2") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.ar_zone.emoji.title"));
-      sleep(5);
-      show_progress(0.834000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.ar.Emoji");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/ar-zone.prop", "item.0.3") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.ar_zone.doodle.title"));
-      sleep(3);
-      show_progress(0.836000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.ar.Doodle");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/ar-zone.prop", "item.0.4") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.ar_zone.decopic.title"));
-      sleep(3);
-      show_progress(0.838000, 0);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.ar.DecoPic");
-  )
-);
-
-show_progress(0.840000, 0);
-
-# Game Launcher
-ifelse(
-  file_getprop("/tmp/install-wizard/game-home.prop", "item.0.1") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.game_services.home.title"));
-      sleep(5);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.GameTools");
-  )
-);
-
-show_progress(0.850000, 0);
-
-# Security
-ifelse(
-  file_getprop("/tmp/install-wizard/security.prop", "item.0.1") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.security.antimalware.title"));
-      sleep(2);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.security.Antivirus");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/security.prop", "item.0.2") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.security.folder.title"));
-      sleep(2);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.security.SecureFolder");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/security.prop", "item.0.3") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.security.share.title"));
-      sleep(2);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.security.PrivateShare");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/security.prop", "item.0.4") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.security.checkout.title"));
-      sleep(2);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.security.Checkout");
-  )
-);
-
-show_progress(0.860000, 0);
-
-# SEC
-ifelse(
-  file_getprop("/tmp/install-wizard/extras.prop", "item.0.1") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.sec.dict.title"));
-      sleep(2);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.extras.Dictionary");
-  )
-);
-
-ifelse(
-  file_getprop("/tmp/install-wizard/extras.prop", "item.0.2") == "1", (
-      ui_print("   - " + file_getprop("/tmp/install-wizard/lang.prop", "addon.sec.stc.title"));
-      sleep(2);
-  ), (
-      run_program("/cache/tools/fresh-tk", "addon_remove", "cf.tenseventyseven.fresh.extras.STC");
-  )
-);
-
-show_progress(0.870000, 0);
-
-# Copy installer selections to the system
-run_program("/cache/tools/fresh-tk", "install_selections");
-
-# Restore SHRP express changes if reinstalling Fresh
-ifelse(
-  file_getprop("/tmp/toolkit.prop", "system.exist.rom") == "false", (
-    sleep(1);
-   ), (
-    run_program("/cache/tools/fresh-tk", "fresh_shrp", "restore");
-   )
-);
-
-show_progress(0.900000, 0);
-
-ui_print(" ");
-ui_print("- " + file_getprop("/tmp/install-wizard/lang.prop", "script.partitions.umount"));
-ifelse(is_mounted(file_getprop("/tmp/toolkit.prop", "block.system.mount")), unmount(file_getprop("/tmp/toolkit.prop", "block.system.mount")));
-show_progress(0.920000, 0);
-ifelse(is_mounted("/vendor"), unmount("/vendor"));
-show_progress(0.940000, 0);
 ifelse(is_mounted("/product"), unmount("/product"));
-show_progress(0.960000, 0);
-run_program("/cache/tools/fresh-tk", "install_cleanup");
-delete_recursive("/cache/tools");
-delete_recursive("/cache/fresh");
-show_progress(0.980000, 0);
-delete("/tmp/build.prop");
-delete("/tmp/fresh.prop");
-delete("/tmp/fresh_core.prop");
-delete("/tmp/toolkit.prop");
+#
+# Installation
+#
+# If option 3 is selected at first
+if file_getprop("/tmp/installer-tmp/install.prop", "selected") == "3" then
+    #
+    # Proceed to skip the ROM installation 
+    ui_print(" Skipping ROM ...");
+#
+# Otherwise
+else
+    #
+    # Print out status 
+    ui_print(" Installing ROM ...");
+    #
+    # Print out status (install system) with time stamp (@)
+    ui_print("@> Installing System Image ...");
+    #
+    # Set first progress
+    set_progress(0.1);
+    #
+    # Install system image to system partition
+    block_image_update("/dev/block/platform/13500000.dwmmc0/by-name/system", package_extract_file("xrom/system.transfer.list"), "xrom/system.new.dat.br", "xrom/system.patch.dat") ||
+    #
+    # Run busybox, to sleep for 1 second
+    run_program("/tmp/busybox", "sleep", "1");
+    #
+    # Set final progress
+    set_progress(0.75);
+    #
+    # Print out status (install vendor) with time stamp (@)
+    ui_print("@> Installing Vendor Image ...");
+    #
+    # Install vendor image to vendor partition 
+    block_image_update("/dev/block/platform/13500000.dwmmc0/by-name/vendor", package_extract_file("xrom/vendor.transfer.list"), "xrom/vendor.new.dat.br", "xrom/vendor.patch.dat") ||
+    #
+    # Run busybox, to sleep for 1 second
+    run_program("/tmp/busybox", "sleep", "1");
+    #
+    # Print out status (install product) with time stamp (@)
+    ui_print("@> Installing Product Image ...");
+    #
+    # Install product image to product partition 
+    block_image_update("/dev/block/platform/13500000.dwmmc0/by-name/product", package_extract_file("xrom/product.transfer.list"), "xrom/product.new.dat.br", "xrom/product.patch.dat") ||
+    #
+    # Run busybox, to sleep for 1 second
+    run_program("/tmp/busybox", "sleep", "1");
+#
+# End
+endif;
+#
+# Resizer
+#
+set_progress(0.80);
+# run_program("/tmp/busybox", "sh", "/tmp/system-resize.sh");
+run_program("/tmp/busybox", "mount", "-t", "auto", "/system_root");
+run_program("/tmp/busybox", "mount", "-t", "auto", "/vendor");
+run_program("/tmp/busybox", "mount", "-t", "auto", "/product");
+run_program("/tmp/busybox", "mount", "-o", "rw,remount", "/system_root");
+run_program("/tmp/busybox", "mount", "-o", "rw,remount", "/vendor");
+run_program("/tmp/busybox", "mount", "-o", "rw,remount", "/product");
+#
+# Device check
+#
+# Get the prop file from compat.prop. If it's A40, then
+if file_getprop("/tmp/installer-tmp/compat.prop", "devid") == "a40" then
+    #
+    # Do the actions for A40, at this case, only A30 need to.
+    ui_print("@> A40 detected.");
+    ui_print("@>> Installing NamelessKernel");
+    package_extract_file("device/a40/boot.img", "/dev/block/platform/13500000.dwmmc0/by-name/boot");
+    package_extract_file("device/a40/dtb.img", "/dev/block/platform/13500000.dwmmc0/by-name/dtb");
+    package_extract_file("device/a40/dtbo.img", "/dev/block/platform/13500000.dwmmc0/by-name/dtbo");
+#
+# End
+endif;
+# Get the prop file from compat.prop. If it's a30, then
+if file_getprop("/tmp/installer-tmp/compat.prop", "devid") == "a30" then
+    #
+    # Do the actions for A30
+    ui_print("@> A30 detected. Extracting required files...");
+    package_extract_dir("device/a30/firmware", "/vendor/firmware");
+    package_extract_dir("device/a30/lib/", "/vendor/lib/");
+    package_extract_dir("device/a30/lib64/", "/vendor/lib64/");
+    package_extract_dir("device/a30/bin", "/vendor/bin");
+    package_extract_file("device/a30/hal/remosaic_daemon.rc", "/vendor/etc/init/remosaic_daemon.rc");
+    set_metadata("/vendor/etc/init/remosaic_daemon.rc", "uid", 0, "gid", 0, "fmode", 0644, "selabel", "u:object_r:vendor_configs_file:s0");
+    ui_print("@>> Installing NamelessKernel");
+    package_extract_file("device/a30/boot.img", "/dev/block/platform/13500000.dwmmc0/by-name/boot");
+    package_extract_file("device/a30/dtb.img", "/dev/block/platform/13500000.dwmmc0/by-name/dtb");
+    package_extract_file("device/a30/dtbo.img", "/dev/block/platform/13500000.dwmmc0/by-name/dtbo");
+#
+# End
+endif;
+#
+# Mods stuff
+#
+# Boot animation
+# Default
+if file_getprop("/tmp/installer-tmp/prefs.prop", "bootanim") == "default" then
+    ui_print("@> Performing task: Install default boot animation");
+    # Extract it
+    package_extract_file("mods/bootanimation/S24/bootsamsungloop.qmg", "/system_root/system/media/bootsamsungloop.qmg");
+    package_extract_file("mods/bootanimation/S24/bootsamsung.qmg", "/system_root/system/media/bootsamsung.qmg");
+    package_extract_file("mods/bootanimation/S24/shutdown.qmg", "/system_root/system/media/shutdown.qmg");
+endif;
+#
+# AT&T
+if file_getprop("/tmp/installer-tmp/prefs.prop", "bootanim") == "att" then
+    ui_print("@> Performing task: Install AT&T boot animation");
+    # Extract it
+    package_extract_file("mods/bootanimation/ATT/bootsamsungloop.qmg", "/system_root/system/media/bootsamsungloop.qmg");
+    package_extract_file("mods/bootanimation/ATT/bootsamsung.qmg", "/system_root/system/media/bootsamsung.qmg");
+    package_extract_file("mods/bootanimation/ATT/shutdown.qmg", "/system_root/system/media/shutdown.qmg");
+endif;
+#
+# KTC
+if file_getprop("/tmp/installer-tmp/prefs.prop", "bootanim") == "ktc" then
+    ui_print("@> Performing task: Install KTC boot animation");
+    # Extract it
+    package_extract_file("mods/bootanimation/KTC/bootsamsungloop.qmg", "/system_root/system/media/bootsamsungloop.qmg");
+    package_extract_file("mods/bootanimation/KTC/bootsamsung.qmg", "/system_root/system/media/bootsamsung.qmg");
+    package_extract_file("mods/bootanimation/KTC/shutdown.qmg", "/system_root/system/media/shutdown.qmg");
+endif;
+#
+# SKT
+if file_getprop("/tmp/installer-tmp/prefs.prop", "bootanim") == "skt" then
+    ui_print("@> Performing task: Install SKT boot animation");
+    # Extract it
+    package_extract_file("mods/bootanimation/SKT/bootsamsungloop.qmg", "/system_root/system/media/bootsamsungloop.qmg");
+    package_extract_file("mods/bootanimation/SKT/bootsamsung.qmg", "/system_root/system/media/bootsamsung.qmg");
+    package_extract_file("mods/bootanimation/SKT/shutdown.qmg", "/system_root/system/media/shutdown.qmg");
+endif;
+#
+# Dual speaker
+# Enable
+if file_getprop("/tmp/installer-tmp/prefs.prop", "ds") == "yes" then
+    ui_print("@> Performing task: Enable dual speaker");
+    # Extract it
+    package_extract_file("mods/dual/mixer_paths.xml", "/vendor/etc/mixer_paths.xml");
+    package_extract_file("mods/dual/mixer_gains.xml", "/vendor/etc/mixer_gains.xml");
+endif;
+#
+# Disable
+if file_getprop("/tmp/installer-tmp/prefs.prop", "ds") == "no" then
+    ui_print("@> Performing task: Disable dual speaker");
+    # Extract it
+    package_extract_file("mods/single/mixer_paths.xml", "/vendor/etc/mixer_paths.xml");
+    package_extract_file("mods/single/mixer_gains.xml", "/vendor/etc/mixer_gains.xml");
+endif;
+#
+# Blurry
+#
+# Disable
+if file_getprop("/tmp/installer-tmp/prefs.prop", "ds") == "no" then
+    ui_print("@> Performing task: Disable live blur");
+    # Exec it
+    run_program("/tmp/busybox", "sed", "-i", "s/<SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_3D_SURFACE_TRANSITION_FLAG>TRUE<\/SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_3D_SURFACE_TRANSITION_FLAG>/<SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_3D_SURFACE_TRANSITION_FLAG>FALSE<\/SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_3D_SURFACE_TRANSITION_FLAG>/g", "/system_root/system/etc/floating_feature.xml");
+endif;
+###########
+# Debloat #
+###########
 ui_print(" ");
-show_progress(1.000000, 0);
-ui_print("- " + file_getprop("/tmp/install-wizard/lang.prop", "finish.title"));
-sleep(3);
+ui_print("@> Checking for selected debloat list...");
+ui_print(" ");
+#
+# Dex
+if file_getprop("/tmp/installer-tmp/bloat.prop", "dex") == "1" then
+    ui_print("@> Debloating DeX");
+    # Nuke it
+    package_extract_file("debloat/dovf", "/tmp/nukeengine.sh");
+    run_program("/tmp/busybox","sh","/tmp/nukeengine.sh");
+endif;
+#
+# OCR
+if file_getprop("/tmp/installer-tmp/bloat.prop", "ocr") == "1" then
+    ui_print("@> Debloating OCR System");
+    # Nuke it
+    package_extract_file("debloat/ocr", "/tmp/nukeengine.sh");
+    run_program("/tmp/busybox","sh","/tmp/nukeengine.sh");
+endif;
+#
+# Quick Share
+if file_getprop("/tmp/installer-tmp/bloat.prop", "qs") == "1" then
+    ui_print("@> Debloating QuickShare");
+    # Nuke it
+    package_extract_file("debloat/quickshare", "/tmp/nukeengine.sh");
+    run_program("/tmp/busybox","sh","/tmp/nukeengine.sh");
+endif;
+#
+# Digital Wellbeing
+if file_getprop("/tmp/installer-tmp/bloat.prop", "dw") == "1" then
+    ui_print("@> Debloating Digital Wellbeing");
+    # Nuke it
+    package_extract_file("debloat/wellbeing", "/tmp/nukeengine.sh");
+    run_program("/tmp/busybox","sh","/tmp/nukeengine.sh");
+endif;
+#
+# NFC
+if file_getprop("/tmp/installer-tmp/bloat.prop", "nfc") == "1" then
+    ui_print("@> Debloating NFC");
+    # Nuke it
+    package_extract_file("debloat/nfc", "/tmp/nukeengine.sh");
+    run_program("/tmp/busybox","sh","/tmp/nukeengine.sh");
+endif;
+#
+# Game Optimization Service
+if file_getprop("/tmp/installer-tmp/bloat.prop", "gos") == "1" then
+    ui_print("@> Debloating Game optimization service");
+    # Nuke it
+    package_extract_file("debloat/game", "/tmp/nukeengine.sh");
+    run_program("/tmp/busybox","sh","/tmp/nukeengine.sh");
+endif;
+#
+# Weather
+if file_getprop("/tmp/installer-tmp/bloat.prop", "weather") == "1" then
+    ui_print("@> Debloating Weather app");
+    # Nuke it
+    package_extract_file("debloat/weather", "/tmp/nukeengine.sh");
+    run_program("/tmp/busybox","sh","/tmp/nukeengine.sh");
+endif;
+#
+# FSTrim
+#
+set_progress(0.96);
+run_program("/tmp/busybox", "sleep", "1");
+    run_program("/tmp/busybox", "fstrim", "-v", "/system_root");
+    run_program("/tmp/busybox", "fstrim", "-v", "/data");
+run_program("/tmp/busybox", "sleep", "1");
+#
+# Unmount
+#
+set_progress(0.99);
+ui_print("@> Unmounting partitions");
+ifelse(is_mounted("/system_root"), unmount("/system_root"));
+ifelse(is_mounted("/vendor"), unmount("/vendor"));
+ifelse(is_mounted("/product"), unmount("/product"));
+#
+# All done!
+# ROM installation is complete, this is your goodbye message.
+# Here's to a smooth reboot and a fresh new system!
+# I hope you won't encounter any bootloops.
+# If you do, don't hesitate to check online resources or reach out to the XRom group for help.
+#
+ui_print(" ");
+ui_print(" ");
+ui_print("ROM installation is complete");
+ui_print("Here's to a smooth reboot and a fresh new system!");
+ui_print("I hope you won't encounter any bootloops.");
+ui_print("If you do, don't hesitate to check online resources or reach out to the XRom group for help.");
+set_progress(1.00);

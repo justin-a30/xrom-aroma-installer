@@ -1,0 +1,161 @@
+#
+# Startup
+#
+# Set colorspace
+ini_set("force_colorspace", "rgba");
+# Set ROM info
+ini_set("rom_name",             "XROM - S21FE");
+ini_set("rom_version",          "Ver3.0");
+ini_set("rom_author",           "Samuel9611 | FlorinelulX123");
+ini_set("rom_device",           "Galaxy A30/A40");
+ini_set("rom_date",             "17/March/2024");
+# Show splash
+splash(2000, "hi");
+# Show animated splash
+# KILL THIS TEMPORARY, UNTIL NEW BINARY IS PLACED.
+# anisplash(1,
+# "anim/x_00.png", 72,
+# "anim/x_02.png", 72,
+# "anim/x_04.png", 72,
+# "anim/x_06.png", 72,
+# "anim/x_08.png", 72,
+# "anim/x_10.png", 72,
+# "anim/x_12.png", 72,
+# "anim/x_14.png", 72,
+# "anim/x_16.png", 72,
+# "anim/x_18.png", 72,
+# "anim/x_20.png", 72,
+# "anim/x_22.png", 72,
+# "anim/x_24.png", 72,
+# "anim/x_26.png", 72,
+# "anim/x_28.png", 72,
+# "anim/x_30.png", 72,
+# "anim/x_32.png", 72,
+# "anim/x_34.png", 72,
+# "anim/x_36.png", 72,
+# "anim/x_38.png", 72,
+# "anim/x_40.png", 72,
+# "anim/x_42.png", 72,
+# "anim/x_44.png", 72,
+# "anim/x_46.png", 72,
+# "anim/x_48.png", 72,
+# "anim/x_50.png", 72,
+# "anim/x_52.png", 72,
+# "anim/x_54.png", 72,
+# "anim/x_56.png", 72,
+# "anim/x_58.png", 72,
+# "anim/x_60.png", 72,
+# "anim/x_62.png", 72,
+# "anim/x_64.png", 72,
+# "anim/x_66.png", 72,
+# "anim/x_68.png", 72,
+# "anim/x_70.png", 72,
+# "anim/x_71.png", 72,
+# "anim/x_73.png", 72,
+# "anim/x_75.png", 72,
+# "anim/x_77.png", 72,
+# "anim/x_78.png", 72);
+# Reload fonts
+fontresload( "0", "fonts/OneUISans-Regular.ttf", "12" );
+fontresload( "1", "fonts/OneUISans-Medium.ttf", "16" );
+fontresload( "2", "fonts/OneUISans-Light.ttf", "18" );
+# Load theme
+theme("xrom");
+# Set text
+ini_set("text_next", " ");
+ini_set("text_back", " ");
+#
+# Page 1 - Welcome
+#
+viewbox(
+    "XROM Installer",
+    "<@center>Welcome to the XROM Installer!</@>\n\n" +
+    "<@center>This installer provides a straightforward and user-friendly installation process.</@>\n\n" +
+    "<@center>With just a few clicks, you can install XROM seamlessly.</@>\n\n\n\n" +
+    "<@center>Tap <b>'next'</b> to continue.</@>",
+    "@xrom"
+);
+#
+# Page 2 - compatibility check
+#
+pleasewait("Checking Compatibility...");
+restotmp("tools/busybox", "busybox");
+
+setvar(
+    "resexec_retstatus",
+    resexec("execs/checker.sh")
+);
+if(getvar("resexec_retstatus")!=1) then
+ini_set("icon_next", "@next_warn");
+endif;
+textbox(
+    "<b>Compatibility check</b>\n",
+    "<@center>Ensure that installer will safely install to your device</@>",
+    "@compat",
+    "\n"+
+    getvar("exec_buffer")+
+    "\n"+
+
+    if(getvar("resexec_retstatus")==1) then
+        "You're good to go."+
+        " "+
+        "Press Next to continue..."
+    else
+        "Sorry! I don't think your device is compatible."+
+        " "+
+        "You can keep going, but don't even ask me if the phone is bricked."    
+    endif;
+);
+#
+# Page 3 - Agreement
+#
+agreebox(
+    "Terms & Agreement",
+    "Read the <b>Terms Of Use</b> carefully!",
+    "@lic",
+    resread("agreement.txt"),
+    "I agree with these terms and conditions",
+    "<@center>You must <b>accept/<b> the terms and conditions</@>"
+);
+#
+# Page 4 - changelogs
+#
+textbox(
+    "ROM Changelogs",
+    "Recent changes in XROM",
+    "@lic",
+    resread("changelog.txt")
+);
+#
+# Page 5 - install options
+#
+include("menu.edify");
+#
+# Page 6 - Summary
+#
+pleasewait("Making summary...");
+resexec("execs/rock.sh");
+ini_set("icon_next", "@install_arrow");
+if(getvar("resexec_retstatus")!=1) then
+ini_set("icon_next", "@install_warn");
+endif;
+textbox(
+    "Ready to rock?",
+    "This is a summary of your installation",
+    "@confirm",
+    read("/tmp/result.txt")
+);
+#
+# Page 7 - Install screen
+#
+fontresload( "0", "fonts/JetBrainsMono-Regular.ttf", "10" );
+ini_set("text_next", " ");
+setvar("retstatus",
+  install(
+      "Installation",
+      "Flashing the rom.\n"+
+      "Please wait...",
+      "@installer",
+      "Installation finished!"
+  )
+);

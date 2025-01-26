@@ -1,0 +1,25 @@
+
+<@center>I am not responsible for your device for:
+<b>• being damaged •
+• not working well •
+• causing a thermonuclear bomb •
+• You are responsible if anything happens •</b>
+
+!! The rom is tested before being released !!
+!! No one is allowed to use the files from this rom with/without permission !!
+
+
+--------------------------------------
+Credits and huge thanks to
+--------------------------------------
+@kevios12 for Nameless kernel
+@TenSeventy7 for his OneUI styled Aroma Installer
+@samuel9611 for making the ROM
+@FlorinelulX123 for helping and fix NFC
+@RiskyEagle for vendor base
+@The_Winner_02 for audio fixes
+@bobert10 for aroma installer modifications
+
+You do this at your own risk!
+
+Accept this to continue.</@>

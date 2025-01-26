@@ -1,0 +1,17 @@
+ini_set("icon_next", "@none");
+menubox(
+    "Installation",
+    "Select your installation method.",
+    "@install",
+    "install.prop",
+
+    "Express installation",          "This option will install XRom with no mods installed, so that can experience so smoothness of our system.",    "@auto",
+    "Personalized installation",     "This option will allow users to customize their system installation with their liking.",    "@custom",
+    "Modify current system",         "This option will add mods and customize current system.",    "@modify"
+);
+
+if prop("install.prop","selected") == "1" then
+    include("auto.edify");
+else
+    include("custom.edify");
+endif;
