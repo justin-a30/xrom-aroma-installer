@@ -22,4 +22,21 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: aromainstaller
-        path: out
+        path: install_wizard-arm64.zip
+
+    - name: upload to tg
+      env:
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        COMMIT_URL: ${{ github.event.head_commit.url }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        TITLE: Dualboot Helper
+      run: |
+        if [ ! -z "${{ secrets.CHAT_ID }}" ] && [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          export VERSION=$(git rev-list --count HEAD)
+          bash $GITHUB_WORKSPACE/tg.sh install_wizard-arm64.zip
+        else
+          echo "Telegram bot token is undefined, please add it to repository secrets!"
+          exit 1
+        fi
