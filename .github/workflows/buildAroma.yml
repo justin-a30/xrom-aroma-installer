@@ -22,7 +22,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: aromainstaller
-        path: install_wizard-arm64.zip
+        path: out/install_wizard-arm64.zip
 
     - name: upload to tg
       env:
@@ -35,7 +35,7 @@ jobs:
       run: |
         if [ ! -z "${{ secrets.CHAT_ID }}" ] && [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
           export VERSION=$(git rev-list --count HEAD)
-          bash $GITHUB_WORKSPACE/tg.sh install_wizard-arm64.zip
+          bash $GITHUB_WORKSPACE/tg.sh out/install_wizard-arm64.zip
         else
           echo "Telegram bot token is undefined, please add it to repository secrets!"
           exit 1
