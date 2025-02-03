@@ -92,33 +92,14 @@ run_program("/tmp/busybox", "mount", "-o", "rw,remount", "/product");
 #
 # Device check
 #
-# Get the prop file from compat.prop. If it's A40, then
+# Get the prop file from compat.prop.
 if file_getprop("/tmp/installer-tmp/compat.prop", "devid") == "a40" then
     #
-    # Do the actions for A40, at this case, only A30 need to.
-    ui_print("@> A40 detected.");
+    # Do the actions for it.
     ui_print("@>> Installing NamelessKernel");
     package_extract_file("device/a40/boot.img", "/dev/block/platform/13500000.dwmmc0/by-name/boot");
     package_extract_file("device/a40/dtb.img", "/dev/block/platform/13500000.dwmmc0/by-name/dtb");
     package_extract_file("device/a40/dtbo.img", "/dev/block/platform/13500000.dwmmc0/by-name/dtbo");
-#
-# End
-endif;
-# Get the prop file from compat.prop. If it's a30, then
-if file_getprop("/tmp/installer-tmp/compat.prop", "devid") == "a30" then
-    #
-    # Do the actions for A30
-    ui_print("@> A30 detected. Extracting required files...");
-    package_extract_dir("device/a30/firmware", "/vendor/firmware");
-    package_extract_dir("device/a30/lib/", "/vendor/lib/");
-    package_extract_dir("device/a30/lib64/", "/vendor/lib64/");
-    package_extract_dir("device/a30/bin", "/vendor/bin");
-    package_extract_file("device/a30/hal/remosaic_daemon.rc", "/vendor/etc/init/remosaic_daemon.rc");
-    set_metadata("/vendor/etc/init/remosaic_daemon.rc", "uid", 0, "gid", 0, "fmode", 0644, "selabel", "u:object_r:vendor_configs_file:s0");
-    ui_print("@>> Installing NamelessKernel");
-    package_extract_file("device/a30/boot.img", "/dev/block/platform/13500000.dwmmc0/by-name/boot");
-    package_extract_file("device/a30/dtb.img", "/dev/block/platform/13500000.dwmmc0/by-name/dtb");
-    package_extract_file("device/a30/dtbo.img", "/dev/block/platform/13500000.dwmmc0/by-name/dtbo");
 #
 # End
 endif;

@@ -34,18 +34,10 @@ if is_substring "A405" "$bootloader"; then
     devsupport="1"
     exit 1
 fi
-## A30 check (a30)
-if is_substring "A305" "$bootloader"; then
-    echo "<#selectbg_g><b>A30 bootloader</#> detected</b>"
-    echo "<#selectbg_g><b>Device is supported!</b></#>"
-    append "devid=a30"
-    devsupport="1"
-    exit 1
-fi
 ## In case it can't find one...
 if [ "$devsupport" == "0" ]; then
-    echo "Hm? This is not <b>A40 or A30.</b>"
-    echo "<#ff0000><b>Unknown device or faulty check file.</b></#>"
+    echo "Hm? This is not <b>A40.</b>"
+    echo "<#ff0000><b>Unknown device.</b></#>"
     exit 55
 fi
 exit 1
