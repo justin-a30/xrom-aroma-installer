@@ -127,26 +127,23 @@ textbox(
     resread("changelog.txt")
 );
 #
-# Page 5 - install options
+# Alert: Installation
 #
-include("menu.edify");
-#
-# Page 6 - Summary
-#
-pleasewait("Making summary...");
-resexec("execs/rock.sh");
-ini_set("icon_next", "@install_arrow");
-if(getvar("resexec_retstatus")!=1) then
-ini_set("icon_next", "@install_warn");
-endif;
-textbox(
-    "Ready to rock?",
-    "This is a summary of your installation",
+if confirm(
+    # Title, desc and icon
+    "About to install...",
+    "Installation will begin. Press OK to continue. Otherwise, press Cancel.",
     "@confirm",
-    read("/tmp/result.txt")
-);
+
+    # Button (Yes, then no)
+    "Cancel",
+    "OK"
+    )=="yes"
+then
+    back("1");
+endif;
 #
-# Page 7 - Install screen
+# Page 5 - Install screen
 #
 fontresload( "0", "fonts/JetBrainsMono-Regular.ttf", "10" );
 ini_set("text_next", " ");

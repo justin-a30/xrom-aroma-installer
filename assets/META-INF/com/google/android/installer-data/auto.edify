@@ -1,9 +1,0 @@
-writetmpfile(
-  "prefs.prop",
-  "selected.0=0\n"
-);
-
-writetmpfile(
-  "bloat.prop",
-  "selected.0=0\n"
-);
